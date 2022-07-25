@@ -1,5 +1,7 @@
 package com.hungnv127.hr.model;
 
+import com.hungnv127.hr.entity.BudgetHistory;
+
 public class BudgetHistoryModel {
     private Long id;
 
@@ -99,5 +101,52 @@ public class BudgetHistoryModel {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public static String validate(BudgetHistoryModel budgetHistory) {
+        String message = "";
+
+        if (budgetHistory.getTypeFlag() == 1) {
+            return validateFundBudget(budgetHistory);
+        } else if (budgetHistory.getTypeFlag() == -1) {
+            return validateSpendBudget(budgetHistory);
+        }
+
+        return message;
+    }
+
+    public static String validateFundBudget(BudgetHistoryModel budgetHistory) {
+        String message = "";
+        if(budgetHistory.getReason() == null || budgetHistory.getReason().isEmpty()) {
+            message = "Lý do nạp tiền ";
+        } else if (budgetHistory.getSource() == null || budgetHistory.getSource().isEmpty()) {
+            message = "Nguồn tiền ";
+        } else if (budgetHistory.getAmount() == null || budgetHistory.getAmount() == 0l) {
+            message = "Số tiền ";
+        } else if ("Nguồn khác".equals(budgetHistory.getSource()) && (budgetHistory.getDetailReason() == null || budgetHistory.getDetailReason().isEmpty())) {
+            message = "Nội dung chi tiết cho nguồn khác ";
+        }
+
+        if (!message.isEmpty()) {
+            message = message + "Là bắt buộc.";
+        }
+
+        return message;
+    }
+
+    public static String validateSpendBudget(BudgetHistoryModel budgetHistory) {
+        String message = "";
+        if(budgetHistory.getReason() == null || budgetHistory.getReason().isEmpty()) {
+            message = "Lý do tiêu tiền ";
+        } else if (budgetHistory.getSource() == null || budgetHistory.getSource().isEmpty()) {
+            message = "Đích đến của tiền ";
+        } else if (budgetHistory.getAmount() == null || budgetHistory.getAmount() == 0l) {
+            message = "Số tiền ";
+        }
+        if (!message.isEmpty()) {
+            message = message + "Là bắt buộc.";
+        }
+
+        return message;
     }
 }

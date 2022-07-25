@@ -8,9 +8,9 @@ import Select from '@mui/material/Select';
 import './AddBudgetForm.css'
 import { Button } from "@mui/material";
 import { SERVER } from "../../../constant";
+import Validation from "../../Validation/Validation";
 
 class AddBudgetForm extends React.Component {
-
     constructor(props) {
         super(props);
         this.state = {
@@ -25,31 +25,41 @@ class AddBudgetForm extends React.Component {
             },
             isLoaded: true,
             error: '',
+            validationMessage: ''
         };
+        this.child = React.createRef();
     }
 
     handleChangeAmount = (event) => {
         let newData  = Object.assign({}, this.state.data);
         newData.amount = event.target.value;
         this.setState({data: newData});
+        if (newData.amount && newData.amount != 0) {
+            document.getElementById("amount-fc").classList.remove("error");
+        }
     };
 
     handleChangeReason = (event) => {
         let newData  = Object.assign({}, this.state.data);
         newData.reason = event.target.value;
         this.setState({data: newData});
+        document.getElementById("reason-fc").classList.remove("error");
     };
 
     handleChangeSource = (event) => {
         let newData  = Object.assign({}, this.state.data);
         newData.source = event.target.value;
         this.setState({data: newData});
+        document.getElementById("source-fc").classList.remove("error");
     };
 
     handleChangeNote = (event) => {
         let newData  = Object.assign({}, this.state.data);
         newData.detailReason = event.target.value;
         this.setState({data: newData});
+        if (newData.detailReason) {
+            document.getElementById("detail-reason-fc").classList.remove("error");
+        }
     };
 
     handleChangeCreator = (event) => {
@@ -60,6 +70,46 @@ class AddBudgetForm extends React.Component {
     };
 
     handleSubmitForm = (event) => {
+        
+
+        let message = '';
+        if (!this.state.data.reason) {
+            message = 'Lý do nạp tiền là bắt buộc.';
+            this.setState({validationMessage: message});
+            this.child.current.showValidationMessage();
+            document.getElementById("reason-fc").classList.add("error");
+            document.getElementById("fund-reason-select").focus();
+            return;
+        }
+
+        // if(!this.state.data.source) {
+        //     message = 'Nguồn tiền là bắt buộc.';
+        //     this.setState({validationMessage: message});
+        //     this.child.current.showValidationMessage();
+        //     document.getElementById("source-fc").classList.add("error");
+        //     document.getElementById("source-select").focus();
+        //     return;
+        // }
+
+        if(!this.state.data.amount || this.state.data.amount == 0) {
+            message = 'Tổng tiền thêm là bắt buộc.';
+            this.setState({validationMessage: message});
+            this.child.current.showValidationMessage();
+            document.getElementById("amount-fc").classList.add("error");
+            document.getElementById("amount-number").focus();
+            return;
+        }
+
+        if(this.state.data.source == 'Nguồn khác' && (!this.state.data.detailReason)) {
+            message = 'Nội dung chi tiết cho nguồn khác là bắt buộc';
+            this.setState({validationMessage: message});
+            this.child.current.showValidationMessage();
+            document.getElementById("detail-reason-fc").classList.add("error");
+            document.getElementById("detail-reason-text").focus();
+            return;
+        }
+
+
         const requestJson = JSON.stringify(this.state.data);
         fetch(SERVER, {
             method: "POST",
@@ -73,8 +123,16 @@ class AddBudgetForm extends React.Component {
                     this.setState({
                         isLoaded: true
                     });
-                    this.props.closeFormHandler();
-                    this.props.handlers[0]();
+                    if(result.status == 201) {           
+                        this.props.closeFormHandler();
+                        this.props.handlers[0]();
+                    } else {
+                        this.setState({
+                            error: true
+                        });
+                        this.props.closeFormHandler();
+                        this.props.handlers[1]();
+                    }
                 },
                 (error) => {
                     this.setState({
@@ -91,8 +149,8 @@ class AddBudgetForm extends React.Component {
         return (
             <Card className='addBudgetForm' sx={{ width: '100%', height: '500px' }}>
                 <h1>Khai báo nạp tiền</h1>
-                <FormControl sx={{ width: '100%' }}>
-                    <InputLabel id="fund-reason-label">Lý do nạp tiền</InputLabel>
+                <FormControl sx={{ width: '100%' }} id="reason-fc">
+                    <InputLabel id="fund-reason-label">Lý do nạp tiền *</InputLabel>
                     <Select
                         labelId="fund-reason-label"
                         id="fund-reason-select"
@@ -105,8 +163,8 @@ class AddBudgetForm extends React.Component {
                         <MenuItem value={'Lý do khác'}>Lý do khác</MenuItem>
                     </Select>
                 </FormControl>  
-                <FormControl sx={{ width: '100%' }}>
-                    <InputLabel id="source-label">Nguồn tiền</InputLabel>
+                <FormControl sx={{ width: '100%' }} id="source-fc">
+                    <InputLabel id="source-label">Nguồn tiền *</InputLabel>
                     <Select
                         labelId="source-label"
                         id="source-select"
@@ -126,10 +184,10 @@ class AddBudgetForm extends React.Component {
                         <MenuItem value={'Nguồn khác'}>Nguồn khác</MenuItem>
                     </Select>
                 </FormControl>
-                <FormControl sx={{ width: '100%' }}>
+                <FormControl sx={{ width: '100%' }} id='amount-fc'>
                     <TextField
-                        id="outlined-number"
-                        label="Tổng tiền thêm"
+                        id="amount-number"
+                        label="Tổng tiền thêm *"
                         type="number"
                         onChange={this.handleChangeAmount}
                         InputLabelProps={{
@@ -137,9 +195,9 @@ class AddBudgetForm extends React.Component {
                         }}
                     />
                 </FormControl> 
-                <FormControl sx={{  width: '100%' }}>
+                <FormControl sx={{  width: '100%' }} id="detail-reason-fc">
                     <TextField
-                        id="filled-multiline-flexible"
+                        id="detail-reason-text"
                         label="Lý do chi tiết"
                         multiline
                         maxRows={4}
@@ -177,7 +235,10 @@ class AddBudgetForm extends React.Component {
                     <Button variant="contained" color="success" sx={{width: '30%'}} onClick={this.handleSubmitForm} >
                         Lưu
                     </Button>              
-                </FormControl>                  
+                </FormControl>     
+                <FormControl sx={{  width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'space-around'}}>
+                    <Validation message = {this.state.validationMessage} ref={this.child}></Validation>     
+                </FormControl>              
             </Card>
         )
     }

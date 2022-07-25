@@ -56,6 +56,7 @@ class BudgetReviewCard extends React.Component {
             isLoaded: false,
             successSnackBarOpen: false,
             errorSnackBarOpen: false,
+            errorSnackBarMessage: 'Lỗi cmnr!',
             alertOutBudget: false,
             keyUpdate: 0
         };
@@ -146,7 +147,7 @@ class BudgetReviewCard extends React.Component {
                                 Còn lại
                             </div>
                             <div style={{width: '60%'}}>
-                                Tổng tiền: {this.state.data.statusReport.total}
+                                Tổng (NGHÌN ĐỒNG): {this.state.data.statusReport.total}
                             </div>
                             <div style={{width: '20%'}}>
                                 Đã xài
@@ -174,7 +175,7 @@ class BudgetReviewCard extends React.Component {
                     </Snackbar>   
                     <Snackbar sx={{width: '100%'}} open={this.state.errorSnackBarOpen} autoHideDuration={4000} onClose={this.handleCloseSnackError}  anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}  >
                         <Alert onClose={this.handleCloseSnackError} severity="error" sx={{ width: '100%' }} >
-                            Lỗi cmnr!
+                            {this.state.errorSnackBarMessage}
                         </Alert>  
                     </Snackbar>  
                     <Snackbar sx={{width: '100%'}} open={this.state.alertOutBudget} autoHideDuration={10000} onClose={this.handleCloseAlertBudget}  anchorOrigin={{ vertical: 'top', horizontal: 'center'}}  >
