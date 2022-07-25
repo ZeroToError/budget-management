@@ -82,14 +82,14 @@ class AddBudgetForm extends React.Component {
             return;
         }
 
-        // if(!this.state.data.source) {
-        //     message = 'Nguồn tiền là bắt buộc.';
-        //     this.setState({validationMessage: message});
-        //     this.child.current.showValidationMessage();
-        //     document.getElementById("source-fc").classList.add("error");
-        //     document.getElementById("source-select").focus();
-        //     return;
-        // }
+        if(!this.state.data.source) {
+            message = 'Nguồn tiền là bắt buộc.';
+            this.setState({validationMessage: message});
+            this.child.current.showValidationMessage();
+            document.getElementById("source-fc").classList.add("error");
+            document.getElementById("source-select").focus();
+            return;
+        }
 
         if(!this.state.data.amount || this.state.data.amount == 0) {
             message = 'Tổng tiền thêm là bắt buộc.';
